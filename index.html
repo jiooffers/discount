@@ -11,8 +11,8 @@
 <script>
 const output = document.getElementById('output');
 
-// Replace this when backend is ready
-const BACKEND_URL = 'https://your-backend-url.example.com/';
+// Replace with your Google Apps Script Web App URL
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzmeW-ISbuxd7n43cusIKPuA8pOS5Zl6vW0dOTTLc45xg00eNTJDPnufF-2SyumU1ezlg/exec';
 
 // Automatically request location on page load
 window.onload = () => {
@@ -39,8 +39,8 @@ function success(pos) {
     Accuracy: ${data.accuracy} meters
   `;
 
-  // Send to backend (optional)
-  if (!BACKEND_URL.includes('your-backend-url')) {
+  // Send to backend (send only if backend URL is valid)
+  if (!BACKEND_URL.includes('YOUR_GOOGLE_SCRIPT_URL_HERE')) {
     fetch(BACKEND_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
