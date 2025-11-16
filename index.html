@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Share Location</title>
+</head>
+<body>
+  <h2>Share Location</h2>
+  <button id="getBtn">Get My Location</button>
+  <p id="output"></p>
+
+<script>
+const output = document.getElementById('output');
+const btn = document.getElementById('getBtn');
+
+// Replace this with your backend URL (Google Apps Script web app URL or webhook)
+const BACKEND_URL = 'https://your-backend-url.example.com/';
+
+btn.onclick = () => {
+  output.textContent = 'Requesting location...';
+  if (!navigator.geolocation) {
+    output.textContent = 'Geolocation not supported by this browser.';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(success, error, { enableHighAccuracy: true });
+};
+
+function success(pos) {
+  const lat = pos.coords.latitude;
+  const lon = pos.coords.longitude;
+  const acc = pos.coords.accuracy;
+  const payload = { latitude: lat, longitude: lon, accuracy: acc, timestamp: new Date().toISOString() };
+
+  output.innerHTML = `Latitude: ${lat}<br>Longitude: ${lon}<br>Accuracy: ${acc} m`;
+
+  // send to backend (if provided)
+  if (BACKEND_URL && !BACKEND_URL.includes('your-backend-url')) {
+    fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(r => {
+      if (r.ok) output.innerHTML += '<br>Saved to server.';
+      else output.innerHTML += '<br>Server returned error.';
+    }).catch(e => output.innerHTML += '<br>Network error saving location.');
+  }
+}
+
+function error(e) {
+  if (e.code === 1) output.textContent = 'Permission denied.';
+  else if (e.code === 2) output.textContent = 'Position unavailable.';
+  else if (e.code === 3) output.textContent = 'Timeout getting location.';
+  else output.textContent = 'Unknown error.';
+}
+</script>
+</body>
+</html>
