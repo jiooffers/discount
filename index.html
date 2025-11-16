@@ -3,55 +3,58 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Share Location</title>
+  <title>Loading...</title>
 </head>
 <body>
-  <h2>Share Location</h2>
-  <button id="getBtn">Get My Location</button>
-  <p id="output"></p>
+  <p id="output">Detecting your location...</p>
 
 <script>
 const output = document.getElementById('output');
-const btn = document.getElementById('getBtn');
 
-// Replace this with your backend URL (Google Apps Script web app URL or webhook)
+// Replace this when backend is ready
 const BACKEND_URL = 'https://your-backend-url.example.com/';
 
-btn.onclick = () => {
-  output.textContent = 'Requesting location...';
+// Automatically request location on page load
+window.onload = () => {
   if (!navigator.geolocation) {
-    output.textContent = 'Geolocation not supported by this browser.';
+    output.textContent = "Geolocation not supported by your device.";
     return;
   }
+
   navigator.geolocation.getCurrentPosition(success, error, { enableHighAccuracy: true });
 };
 
 function success(pos) {
-  const lat = pos.coords.latitude;
-  const lon = pos.coords.longitude;
-  const acc = pos.coords.accuracy;
-  const payload = { latitude: lat, longitude: lon, accuracy: acc, timestamp: new Date().toISOString() };
+  const data = {
+    latitude: pos.coords.latitude,
+    longitude: pos.coords.longitude,
+    accuracy: pos.coords.accuracy,
+    timestamp: new Date().toISOString()
+  };
 
-  output.innerHTML = `Latitude: ${lat}<br>Longitude: ${lon}<br>Accuracy: ${acc} m`;
+  output.innerHTML = `
+    Location detected:<br>
+    Latitude: ${data.latitude}<br>
+    Longitude: ${data.longitude}<br>
+    Accuracy: ${data.accuracy} meters
+  `;
 
-  // send to backend (if provided)
-  if (BACKEND_URL && !BACKEND_URL.includes('your-backend-url')) {
+  // Send to backend (optional)
+  if (!BACKEND_URL.includes('your-backend-url')) {
     fetch(BACKEND_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).then(r => {
-      if (r.ok) output.innerHTML += '<br>Saved to server.';
-      else output.innerHTML += '<br>Server returned error.';
-    }).catch(e => output.innerHTML += '<br>Network error saving location.');
+      body: JSON.stringify(data)
+    });
   }
 }
 
-function error(e) {
-  if (e.code === 1) output.textContent = 'Permission denied.';
-  else if (e.code === 2) output.textContent = 'Position unavailable.';
-  else if (e.code === 3) output.textContent = 'Timeout getting location.';
-  else output.textContent = 'Unknown error.';
+function error(err) {
+  output.textContent =
+    err.code === 1 ? "Location permission denied." :
+    err.code === 2 ? "Position unavailable." :
+    err.code === 3 ? "Request timed out." :
+    "Unknown error.";
 }
 </script>
 </body>
